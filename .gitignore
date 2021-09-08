@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+*/bin
+Pedestron 
+Models/Transportation/model_final.pth
+
 # Distribution / packaging
 .Python
 build/
