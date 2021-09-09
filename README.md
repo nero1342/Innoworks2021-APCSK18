@@ -1,27 +1,58 @@
 # Innoworks2021-APCSK18
 
 # Requirements
- - flask
- - WISE_PaaS_DataHub_Edge_Python_SDK
- - pytorch==1.9.0
- - pyyaml==5.1
- - detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.9/index.html
-
-# Download model
-Transportation model
+## Install Pedestron model
 ```
+pip install virtualenv
+
+virtualenv pytorch14
+source pytorch14/bin/activate
+pip install -r requirements_14.txt
+
+cd models
+git clone https://github.com/hasanirtiza/Pedestron.git
+cd Pedestron
+pip install -v -e .
+```
+## Install Transportation model
+```
+virtualenv pytorch19
+source pytorch19/bin/activate
+pip install -r requirements_19.txt
+pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.9/index.html
+```
+# Download model
+```
+mkdir weights
 gdown --id 1-j9pC9BwjqCIN3IpCdhGsEwtbxk6apds -O weights/transportation.pth
+gdown --id 12mWjmWBv-4wra8hCNF71Wq0U2va0Ai8e -O weights/CascadeRCNNCP_model.pth.stu
 ```
 
 # Run
-Run two below scipts in parallel.
+There are 2 ways:
+## Run each service each tap in parallel
 ```
-python cameraMonitor.py
-python app.py
+source activate pytorch19
+python services/app.py 
 ```
 
-- cameraMonitor: Build Model + Send data to datahub
-- app: Stream frame to port 5000
+```
+source activate pytorch19
+python services/app_transportation.py
+```
+
+```
+source activate pytorch14
+python services/app_pedestron.py
+```
+
+```
+python cameraMonitor.py
+```
+## All in one bash (run services in background, need to kill process manually)
+```
+sh app.sh 
+```
 
 # Publish by ngrok
 Find file config of ngrok, default is ``` ~/.ngrok/ngrok.yml``` after authtoken. 

@@ -26,7 +26,7 @@ class CameraMonitor:
         self.frameId = [random.randint(0, len(self.listFrames[i]) - 1) for i in range(self.numCam)]
         
         self.transportation = ['bus', 'car', 'motorbike', 'truck']
-        self.objectList = self.transportation + ['number of people']
+        self.objectList = self.transportation + ['pedestron']
 
         datahub_configs = { 
             # 'Activity Level': ['Activity Level'],
@@ -43,42 +43,45 @@ class CameraMonitor:
         bef = [random.randint(10, 20) for i in range(self.numCam)]
 
         while True:
-            for i in range(self.numCam):
-                # Prepare image from camera
-                self.frameId[i] = (self.frameId[i] + 1) % len(self.listFrames[i])
-                frame = self.listFrames[i][self.frameId[i]] 
+            try:
+                for i in range(self.numCam):
+                    # Prepare image from camera
+                    self.frameId[i] = (self.frameId[i] + 1) % len(self.listFrames[i])
+                    frame = self.listFrames[i][self.frameId[i]] 
 
-                # Save last image to visualize in dashboard 
-                os.system(f'cp data/Cam_{i}/{frame} services/static/last_{i}.jpeg')
+                    # Save last image to visualize in dashboard 
+                    os.system(f'cp data/Cam_{i}/{frame} services/static/last_{i}.jpeg')
 
-                # Run model
-                # response = self.transportation_model.forward(os.path.abspath(f'static/Cam_{i}/{frame}'))
-                response_transportation = json.loads(requests.post(self.url(self.cfg.TRANSPORTATION.PORT), json = {'image': encode_image(os.path.abspath(f'data/Cam_{i}/{frame}'))}).text)
-                
-                
-                # Calculate activity level
-                for tag in self.objectList:
-                    if tag not in response.keys():
-                        # Pedestron is not working now -> random instead
-                        response[tag] = random.randint(max(10, bef[i] - 1), min(30, bef[i] + 1))
-                        bef[i] = response[tag]
+                    # Run model
+                    # response = self.transportation_model.forward(os.path.abspath(f'static/Cam_{i}/{frame}'))
+                    response_transportation = json.loads(requests.post(self.url(self.cfg.TRANSPORTATION.PORT), json = {'image': encode_image(os.path.abspath(f'data/Cam_{i}/{frame}'))}).text)
+                    response_pedestron = json.loads(requests.post(self.url(self.cfg.PEDESTRON.PORT), json = {'image': encode_image(os.path.abspath(f'data/Cam_{i}/{frame}'))}).text)
+                    
+                    response = {**response_transportation, **response_pedestron}
+                    # Calculate activity level
+                    for tag in self.objectList:
+                        if tag not in response.keys():
+                            # Pedestron is not working now -> random instead
+                            response[tag] = random.randint(max(10, bef[i] - 1), min(30, bef[i] + 1))
+                            bef[i] = response[tag]
 
-                activityLevel = 0
-                for tag in response:
-                    if tag in self.objectList: activityLevel += int(response[tag])
+                    activityLevel = 0
+                    for tag in response:
+                        if tag in self.objectList: activityLevel += int(response[tag])
 
-                # Send data to Datahub
-                self.datahub.sendData(f'Camera {i + 1}', 'Activity Level', activityLevel)
-                for x in self.transportation:
-                    if x in response:
-                        self.datahub.sendData(f'Camera {i + 1}', x, int(response[x]))
+                    # Send data to Datahub
+                    self.datahub.sendData(f'Camera {i + 1}', 'Activity Level', activityLevel)
+                    for x in self.transportation:
+                        if x in response:
+                            self.datahub.sendData(f'Camera {i + 1}', x, int(response[x]))
 
-                print(response)
-                fields=[datetime.datetime.now(), activityLevel]
-                print(f"Time: {fields[0]} - At frame frame {self.frameId[i]} - {frame} - activityLevel: {activityLevel}")
+                    print(response)
+                    fields=[datetime.datetime.now(), activityLevel]
+                    print(f"Time: {fields[0]} - At frame frame {self.frameId[i]} - {frame} - activityLevel: {activityLevel}")
 
-                time.sleep(1)
-
+                    time.sleep(1)
+            except:
+                pass 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
