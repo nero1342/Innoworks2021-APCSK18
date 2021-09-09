@@ -1,0 +1,8 @@
+flask
+torch==1.4.0
+opencv-python
+torchvision==0.5.0
+numpy
+cython
+pyyaml==5.1
+scipy 

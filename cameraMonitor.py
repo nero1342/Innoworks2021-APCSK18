@@ -1,8 +1,9 @@
-from Models.datahub import DataHub
-from Models.Transportation.model import Model 
+from models.datahub import DataHub
+# from Models.Transportation.model import Model 
+
+import argparse
 
 import requests
-import base64
 import cv2
 import random 
 import json 
@@ -11,24 +12,32 @@ import time
 import datetime 
 import csv
 
+from utils.image import encode_image
+from utils.config import Config 
+import yaml 
+
 class CameraMonitor:
-    def __init__(self, transportation_model_path):
+    def __init__(self, cfg):
+
+        self.cfg = cfg
+
         self.numCam = 2
-        self.listFrames = [sorted(os.listdir(f'static/Cam_{i}')) for i in range(self.numCam)]
+        self.listFrames = [sorted(os.listdir(f'data/Cam_{i}')) for i in range(self.numCam)]
         self.frameId = [random.randint(0, len(self.listFrames[i]) - 1) for i in range(self.numCam)]
         
         self.transportation = ['bus', 'car', 'motorbike', 'truck']
         self.objectList = self.transportation + ['number of people']
 
-        configs = { 
+        datahub_configs = { 
             # 'Activity Level': ['Activity Level'],
             'Camera 1': self.transportation + ['Activity Level'],
             'Camera 2': self.transportation + ['Activity Level'],
         }
 
-        self.datahub = DataHub(configs)
+        self.datahub = DataHub(datahub_configs)
 
-        self.transportation_model = Model(pretrained_path=transportation_model_path)
+    def url(self, port):
+        return f'{self.cfg.ADDRESS}:{port}/predict'
 
     def run(self):
         bef = [random.randint(10, 20) for i in range(self.numCam)]
@@ -40,11 +49,13 @@ class CameraMonitor:
                 frame = self.listFrames[i][self.frameId[i]] 
 
                 # Save last image to visualize in dashboard 
-                os.system(f'cp static/Cam_{i}/{frame} static/last_{i}.jpeg')
+                os.system(f'cp data/Cam_{i}/{frame} services/static/last_{i}.jpeg')
 
                 # Run model
-                response = self.transportation_model.forward(os.path.abspath(f'static/Cam_{i}/{frame}'))
-
+                # response = self.transportation_model.forward(os.path.abspath(f'static/Cam_{i}/{frame}'))
+                response_transportation = json.loads(requests.post(self.url(self.cfg.TRANSPORTATION.PORT), json = {'image': encode_image(os.path.abspath(f'data/Cam_{i}/{frame}'))}).text)
+                
+                
                 # Calculate activity level
                 for tag in self.objectList:
                     if tag not in response.keys():
@@ -68,5 +79,12 @@ class CameraMonitor:
 
                 time.sleep(1)
 
-cameraMonitor = CameraMonitor(transportation_model_path = 'Models/Transportation/model_final.pth')
-cameraMonitor.run()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', default='config.yaml', help='Configuration')
+    args = parser.parse_args()
+    service_cfg = Config(yaml.load(open(args.config, 'r'), Loader=yaml.Loader))
+
+    cameraMonitor = CameraMonitor(service_cfg)
+    cameraMonitor.run()

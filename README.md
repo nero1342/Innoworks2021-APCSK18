@@ -10,7 +10,7 @@
 # Download model
 Transportation model
 ```
-gdown --id 1-j9pC9BwjqCIN3IpCdhGsEwtbxk6apds -O Models/Transportation/model_final.pth
+gdown --id 1-j9pC9BwjqCIN3IpCdhGsEwtbxk6apds -O weights/transportation.pth
 ```
 
 # Run

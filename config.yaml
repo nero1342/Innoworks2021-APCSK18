@@ -1,0 +1,13 @@
+ADDRESS: http://0.0.0.0
+APP:
+  PORT: 5555
+
+TRANSPORTATION:
+  PORT: 5556
+  WEIGHT: weights/transportation.pth
+
+PEDESTRON:
+  PORT: 5567
+  CONFIG: models/Pedestron/configs/elephant/cityperson/cascade_hrnet.py
+  WEIGHT: weights/CascadeRCNNCP_model.pth.stu
+

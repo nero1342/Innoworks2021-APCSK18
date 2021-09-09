@@ -7,8 +7,8 @@ __pycache__/
 *.so
 
 */bin
-Pedestron 
-Models/Transportation/model_final.pth
+weights
+models/Pedestron 
 
 # Distribution / packaging
 .Python

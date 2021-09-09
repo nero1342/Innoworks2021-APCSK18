@@ -18,7 +18,7 @@ from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor
 from detectron2.config import get_cfg
 
-class Model:
+class TransportationModel:
     def __init__(self, pretrained_path):
         pass
         print("Constructing model...")
@@ -40,7 +40,7 @@ class Model:
         outputs = self.predictor(im)
         from collections import Counter 
         result = Counter(outputs["instances"].pred_classes.tolist())
-        print(outputs)
+        # print(outputs)
         out = {}
         for i in range(len(self.name)):
             if i not in result.keys():
