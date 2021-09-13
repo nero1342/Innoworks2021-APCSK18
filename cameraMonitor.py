@@ -11,6 +11,7 @@ import os
 import time 
 import datetime 
 import csv
+import shutil
 
 from utils.image import encode_image
 from utils.config import Config 
@@ -41,17 +42,19 @@ class CameraMonitor:
 
     def run(self):
         bef = [random.randint(10, 20) for i in range(self.numCam)]
-
         while True:
             try:
                 for i in range(self.numCam):
+                    print("Query camera ", i)
                     # Prepare image from camera
                     self.frameId[i] = (self.frameId[i] + 1) % len(self.listFrames[i])
                     frame = self.listFrames[i][self.frameId[i]] 
 
                     # Save last image to visualize in dashboard 
-                    os.system(f'cp data/Cam_{i}/{frame} services/static/last_{i}.jpeg')
-
+                    shutil.copy2(f'data/Cam_{i}/{frame}', f'services/static/last_{i}.jpeg') 
+                    # os.system(f'cp data/Cam_{i}/{frame} services/static/last_{i}.jpeg')
+                    # print(i)
+                    # continue 
                     # Run model
                     # response = self.transportation_model.forward(os.path.abspath(f'static/Cam_{i}/{frame}'))
                     response_transportation = json.loads(requests.post(self.url(self.cfg.TRANSPORTATION.PORT), json = {'image': encode_image(os.path.abspath(f'data/Cam_{i}/{frame}'))}).text)
@@ -79,9 +82,11 @@ class CameraMonitor:
                     fields=[datetime.datetime.now(), activityLevel]
                     print(f"Time: {fields[0]} - At frame frame {self.frameId[i]} - {frame} - activityLevel: {activityLevel}")
 
-                    time.sleep(self.cfg.CAMERA_MONITOR.SLEEP_TIME)
-            except:
+                time.sleep(self.cfg.CAMERA_MONITOR.SLEEP_TIME)
+            except Exception as e: 
+                print(e)
                 pass 
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

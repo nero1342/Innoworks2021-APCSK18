@@ -12,4 +12,4 @@ PEDESTRON:
   WEIGHT: weights/CascadeRCNNCP_model.pth.stu
 
 CAMERA_MONITOR:
-  SLEEP_TIME: 5
+  SLEEP_TIME: 1
