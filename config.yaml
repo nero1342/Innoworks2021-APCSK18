@@ -11,3 +11,5 @@ PEDESTRON:
   CONFIG: models/Pedestron/configs/elephant/cityperson/cascade_hrnet.py
   WEIGHT: weights/CascadeRCNNCP_model.pth.stu
 
+CAMERA_MONITOR:
+  SLEEP_TIME: 5

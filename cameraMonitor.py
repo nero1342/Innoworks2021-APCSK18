@@ -79,7 +79,7 @@ class CameraMonitor:
                     fields=[datetime.datetime.now(), activityLevel]
                     print(f"Time: {fields[0]} - At frame frame {self.frameId[i]} - {frame} - activityLevel: {activityLevel}")
 
-                    time.sleep(1)
+                    time.sleep(self.cfg.CAMERA_MONITOR.SLEEP_TIME)
             except:
                 pass 
 

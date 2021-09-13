@@ -73,3 +73,17 @@ ngrok start --all
 ```
 
 In total, we need three tabs in parallel to run cameraMonitor, app, ngrok
+
+
+# Activate cameras in dashboard
+- Assume the current ngrok domain is http://8a20-14-238-32-110.ngrok.io 
+
+Follow these steps to activate the camera:
+- Go to the dashboard. [Link here](https://dashboard-cxnam-ews.education.wise-paas.com/?orgId=5)
+- Chose the ```Main``` dashboard.
+- Edit panel "Camera 1"
+- Choose Visualization
+- Edit the ```Picture URL``` by ```http://8a20-14-238-32-110.ngrok.io/static/last_0.jpeg``` (The format is ```{DOMAIN}/static/last_{X - 1}.jpeg```)
+- Save dashboard. 
+
+Do the same with other cameras (i.e Camera 2 - last_1.jpeg, Camera 3 - last_2.jpeg)
