@@ -10,9 +10,9 @@ from wisepaasdatahubedgesdk.Model.Edge import EdgeAgentOptions, MQTTOptions, DCC
 from wisepaasdatahubedgesdk.Common.Utils import RepeatedTimer
 
 class DataHub():
-    _nodeId = '6fc95c35-1382-4a6a-b68d-64a61c65ce1f'
+    _nodeId = 'bbc611af-51f3-48aa-a53b-f93cb051f7f0'
     _apiUrl = 'https://api-dccs-ensaas.education.wise-paas.com/'
-    _credentialKey = '73c8acf95c4c172434efac746e617c08'
+    _credentialKey = 'aacf04e69b6d87ae093f799fdaecf5py'
 
     def __init__(self, configs):
         self.timer = None 

@@ -87,3 +87,16 @@ Follow these steps to activate the camera:
 - Save dashboard. 
 
 Do the same with other cameras (i.e Camera 2 - last_1.jpeg, Camera 3 - last_2.jpeg)
+
+
+# Create heatmap
+## Requirements
+```
+pip install -r requirements_heatmap.txt
+```
+Download ```geckodriver``` at [here](https://github.com/mozilla/geckodriver/releases) and put it in the same folder with ```heatmap.py``` 
+
+## How does it work?
+After calculating activity level, call function ```heatmap2png``` to create a heatmap at ```services/static/heatmap.png``` for visualizing with dashboard.  
+## 
+You can turn on/off heatmap with ```config.yaml -> CAMERA_MONITOR -> USE_HEATMAP = True/False```

@@ -17,6 +17,9 @@ from utils.image import encode_image
 from utils.config import Config 
 import yaml 
 
+from heatmap import heatmap2png, genRelatedPoints, heatmap2html
+# random.seed(12345678)
+
 class CameraMonitor:
     def __init__(self, cfg):
 
@@ -35,12 +38,24 @@ class CameraMonitor:
             'Camera 2': self.transportation + ['Activity Level'],
         }
 
-        self.datahub = DataHub(datahub_configs)
+        print("Datahub connecting...")
+        # self.datahub = DataHub(datahub_configs)
+
+        # Camera's location
+        pts = [(10.762913,106.6821717), (10.765913,106.6524717), (10.7739789,106.6880888), (10.7735451,106.6637059),
+                (10.7586745,106.6317317), (10.744487,106.6390273), (10.7643547,106.66642), (10.7338196,106.6511723),
+                (10.7986166,106.6576985), (10.8164056,106.6637925),
+                (10.7752692,106.6929486),
+        ]
+
+        self.related_pts = [genRelatedPoints(pt) for pt in pts]
+
 
     def url(self, port):
         return f'{self.cfg.ADDRESS}:{port}/predict'
 
     def run(self):
+        print("Camera Monitor Starting..")
         bef = [random.randint(10, 20) for i in range(self.numCam)]
         while True:
             try:
@@ -62,27 +77,36 @@ class CameraMonitor:
                     
                     response = {**response_transportation, **response_pedestron}
                     # Calculate activity level
-                    for tag in self.objectList:
-                        if tag not in response.keys():
-                            # Pedestron is not working now -> random instead
-                            response[tag] = random.randint(max(10, bef[i] - 1), min(30, bef[i] + 1))
-                            bef[i] = response[tag]
+                    # for tag in self.objectList:
+                    #     if tag not in response.keys():
+                    #         # Pedestron is not working now -> random instead
+                    #         response[tag] = random.randint(max(10, bef[i] - 1), min(30, bef[i] + 1))
 
                     activityLevel = 0
                     for tag in response:
                         if tag in self.objectList: activityLevel += int(response[tag])
 
+                    bef[i] = activityLevel
+
                     # Send data to Datahub
-                    self.datahub.sendData(f'Camera {i + 1}', 'Activity Level', activityLevel)
-                    for x in self.transportation:
-                        if x in response:
-                            self.datahub.sendData(f'Camera {i + 1}', x, int(response[x]))
+                    # self.datahub.sendData(f'Camera {i + 1}', 'Activity Level', activityLevel)
+                    # for x in self.transportation:
+                    #     if x in response:
+                    #         self.datahub.sendData(f'Camera {i + 1}', x, int(response[x]))
 
                     print(response)
                     fields=[datetime.datetime.now(), activityLevel]
                     print(f"Time: {fields[0]} - At frame frame {self.frameId[i]} - {frame} - activityLevel: {activityLevel}")
+                
 
+                if self.cfg.CAMERA_MONITOR.USE_HEATMAP:
+                    locations = [(pt, bef[i % self.numCam] * 2) for i, pt in enumerate(self.related_pts)]
+                    heatmap2png("services/static/heatmap.png", locations)
+                    # print(locations)
+                    # heatmap2html("out.html", locations)
+                    
                 time.sleep(self.cfg.CAMERA_MONITOR.SLEEP_TIME)
+
             except Exception as e: 
                 print(e)
                 pass 
