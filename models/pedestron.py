@@ -8,7 +8,7 @@ class PedestronModel:
     def __init__(self, cfg):
         print("Init Pedestron model...")
         self.model = init_detector(
-            cfg.PEDESTRON.CONFIG, cfg.PEDESTRON.weight, device=torch.device('cuda:0'))
+            cfg.PEDESTRON.CONFIG, cfg.PEDESTRON.WEIGHT, device=torch.device('cuda:0'))
 
     def forward(self, image, is_path = True):
         if is_path:
@@ -35,6 +35,6 @@ class PedestronModel:
 
 if __name__ == "__main__":
     model = PedestronModel()
-    img = cv2.imread('/home/nero/Innoworks2021-APCSK18/services/last_1.jpeg')
+    img = cv2.imread('/home/nero/Innoworks2021-APCSK18/models/Pedestron/demo/main.png')
     x = model.forward(img, is_path = False)
     print(x)
