@@ -14,3 +14,13 @@ PEDESTRON:
 CAMERA_MONITOR:
   SLEEP_TIME: 1
   USE_HEATMAP: True 
+
+NOTIFICATION:  
+  USERNAME: nero18@apcs.vn
+  PASSWORD: Nguyenero123! 
+
+  BASE_URL: http://portal-notification-cxnam-ews.education.wise-paas.com/api/
+
+  THRESHOLD: 20
+  # Delta time between two notifications 
+  INTERVAL: 300

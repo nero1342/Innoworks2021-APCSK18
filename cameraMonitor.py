@@ -18,6 +18,8 @@ from utils.config import Config
 import yaml 
 
 from heatmap import heatmap2png, genRelatedPoints, heatmap2html
+from notification import Notification 
+
 # random.seed(12345678)
 
 class CameraMonitor:
@@ -50,6 +52,10 @@ class CameraMonitor:
 
         self.related_pts = [genRelatedPoints(pt) for pt in pts]
 
+        print("Init notification...")
+        self.notification = Notification(cfg) 
+        noti_auth_response = self.notification.auth()
+        print("Notifictaion auth: ", noti_auth_response.text) 
 
     def url(self, port):
         return f'{self.cfg.ADDRESS}:{port}/predict'
@@ -57,6 +63,9 @@ class CameraMonitor:
     def run(self):
         print("Camera Monitor Starting..")
         bef = [random.randint(10, 20) for i in range(self.numCam)]
+
+        last_time_noti = [None for i in range(self.numCam)]
+
         while True:
             try:
                 for i in range(self.numCam):
@@ -67,21 +76,13 @@ class CameraMonitor:
 
                     # Save last image to visualize in dashboard 
                     shutil.copy2(f'data/Cam_{i}/{frame}', f'services/static/last_{i}.jpeg') 
-                    # os.system(f'cp data/Cam_{i}/{frame} services/static/last_{i}.jpeg')
-                    # print(i)
-                    # continue 
+                    
                     # Run model
-                    # response = self.transportation_model.forward(os.path.abspath(f'static/Cam_{i}/{frame}'))
                     response_transportation = json.loads(requests.post(self.url(self.cfg.TRANSPORTATION.PORT), json = {'image': encode_image(os.path.abspath(f'data/Cam_{i}/{frame}'))}).text)
                     response_pedestron = json.loads(requests.post(self.url(self.cfg.PEDESTRON.PORT), json = {'image': encode_image(os.path.abspath(f'data/Cam_{i}/{frame}'))}).text)
                     
                     response = {**response_transportation, **response_pedestron}
-                    # Calculate activity level
-                    # for tag in self.objectList:
-                    #     if tag not in response.keys():
-                    #         # Pedestron is not working now -> random instead
-                    #         response[tag] = random.randint(max(10, bef[i] - 1), min(30, bef[i] + 1))
-
+                    
                     activityLevel = 0
                     for tag in response:
                         if tag in self.objectList: activityLevel += int(response[tag])
@@ -94,10 +95,20 @@ class CameraMonitor:
                     #     if x in response:
                     #         self.datahub.sendData(f'Camera {i + 1}', x, int(response[x]))
 
+                    # Notification
+
+                    if last_time_noti[i] is not None:
+                        print(f"Wait {self.cfg.NOTIFICATION.INTERVAL - (time.time() - last_time_noti[i])} seconds for the next notification")
+                    if (activityLevel >= self.cfg.NOTIFICATION.THRESHOLD) and \
+                        ((last_time_noti[i] is None) or ((time.time() - last_time_noti[i]) >= self.cfg.NOTIFICATION.INTERVAL)):
+                        last_time_noti[i] = time.time() 
+                        self.notification.sendMessage()
+
+                        print("Sent from camera ", i)
                     print(response)
                     fields=[datetime.datetime.now(), activityLevel]
                     print(f"Time: {fields[0]} - At frame frame {self.frameId[i]} - {frame} - activityLevel: {activityLevel}")
-                
+
 
                 if self.cfg.CAMERA_MONITOR.USE_HEATMAP:
                     locations = [(pt, bef[i % self.numCam] * 2) for i, pt in enumerate(self.related_pts)]
