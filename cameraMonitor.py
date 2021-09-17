@@ -41,7 +41,7 @@ class CameraMonitor:
         }
 
         print("Datahub connecting...")
-        # self.datahub = DataHub(datahub_configs)
+        self.datahub = DataHub(datahub_configs)
 
         # Camera's location
         pts = [(10.762913,106.6821717), (10.765913,106.6524717), (10.7739789,106.6880888), (10.7735451,106.6637059),
@@ -90,10 +90,10 @@ class CameraMonitor:
                     bef[i] = activityLevel
 
                     # Send data to Datahub
-                    # self.datahub.sendData(f'Camera {i + 1}', 'Activity Level', activityLevel)
-                    # for x in self.transportation:
-                    #     if x in response:
-                    #         self.datahub.sendData(f'Camera {i + 1}', x, int(response[x]))
+                    self.datahub.sendData(f'Camera {i + 1}', 'Activity Level', activityLevel)
+                    for x in self.transportation:
+                        if x in response:
+                            self.datahub.sendData(f'Camera {i + 1}', x, int(response[x]))
 
                     # Notification
 
